@@ -32,7 +32,7 @@ npx expo start --tunnel
 │   │   │   └── RootNavigator.tsx     # Navegador raíz
 │   │   └── providers/                # Providers de contexto (React Query, etc.)
 │   ├── features/                     # Características principales de la app
-│   │   ├── example/                  # Featura de ejemplo
+│   │   ├── example/                  # Feature de ejemplo
 │   │   │   ├── api/                  # Servicios HTTP
 │   │   │   ├── components/           # Componentes específicos
 │   │   │   ├── hooks/                # Custom hooks
@@ -70,6 +70,11 @@ npm install react-native-gesture-handler
 ### Estado y datos
 ```bash
 npm install @tanstack/react-query
+```
+
+### Audio y Media
+```bash
+npm install expo-av
 ```
 
 ### Expo y React Native
