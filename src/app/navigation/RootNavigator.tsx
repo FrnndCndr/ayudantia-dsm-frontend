@@ -1,27 +1,17 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import SystemStatusScreen from "../../features/auth/screens/SystemStatusScreen";
+import NowPlayingScreen from "../../features/music/screens/NowPlayingScreen";
 
-export type RootStackParamList = {
-  SystemStatus: undefined;
-};
-
+export type RootStackParamList = { NowPlaying: undefined };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="SystemStatus"
-      screenOptions={{ 
-        headerShown: true,
-        headerBackVisible: false 
-      }}
+      initialRouteName="NowPlaying"
+      screenOptions={{ headerShown: false, headerBackVisible: false }}
     >
-      <Stack.Screen
-        name="SystemStatus"
-        component={SystemStatusScreen}
-        options={{ title: "Estado del sistema" }}
-      />
+      <Stack.Screen name="NowPlaying" component={NowPlayingScreen} />
     </Stack.Navigator>
   );
 }
