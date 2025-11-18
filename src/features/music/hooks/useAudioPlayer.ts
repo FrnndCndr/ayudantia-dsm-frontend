@@ -88,13 +88,33 @@ export const useAudioPlayer = (playlist: Song[]) => {
       if (status.didJustFinish && !status.isLooping) {
         // Ejecutar de forma asíncrona sin bloquear
         setTimeout(async () => {
-          const currentPlaylist = playlistRef.current;
           const state = playerStateRef.current;
+          const currentPlaylist = playlistRef.current;
           
           if (currentPlaylist.length === 0) return;
 
-          // Avance simple circular (sin shuffle ni repeat)
-          const nextIndex = (state.currentIndex + 1) % currentPlaylist.length;
+          let nextIndex: number;
+
+          if (state.isShuffle) {
+            nextIndex = Math.floor(Math.random() * currentPlaylist.length);
+          } else {
+            nextIndex = (state.currentIndex + 1) % currentPlaylist.length;
+          }
+
+          // Si repeatMode es 'off' y llegamos al final, detener
+          if (
+            state.repeatMode === 'off' &&
+            nextIndex === 0 &&
+            state.currentIndex === currentPlaylist.length - 1
+          ) {
+            if (soundRef.current) {
+              await soundRef.current.stopAsync();
+              await soundRef.current.unloadAsync(); // Descargar completamente para evitar pitidos
+              soundRef.current = null;
+            }
+            setPlayerState(prev => ({ ...prev, isPlaying: false, currentTime: 0 }));
+            return;
+          }
 
           // Cargar siguiente canción
           const nextSong = currentPlaylist[nextIndex];
@@ -175,10 +195,29 @@ export const useAudioPlayer = (playlist: Song[]) => {
     
     if (currentPlaylist.length === 0) return;
 
-    // Siempre avanza linealmente (sin shuffle ni repeat)
-    const nextIndex = (state.currentIndex + 1) % currentPlaylist.length;
+    let nextIndex: number;
 
-    // Si llegamos al final, volver al inicio (comportamiento circular simple)
+    if (state.isShuffle) {
+      nextIndex = Math.floor(Math.random() * currentPlaylist.length);
+    } else {
+      nextIndex = (state.currentIndex + 1) % currentPlaylist.length;
+    }
+
+    // Si repeatMode es 'off' y llegamos al final, detener
+    if (
+      state.repeatMode === 'off' &&
+      nextIndex === 0 &&
+      state.currentIndex === currentPlaylist.length - 1
+    ) {
+      if (soundRef.current) {
+        await soundRef.current.stopAsync();
+        await soundRef.current.unloadAsync(); // Descargar completamente
+        soundRef.current = null;
+      }
+      setPlayerState(prev => ({ ...prev, isPlaying: false, currentTime: 0 }));
+      return;
+    }
+
     await loadAndPlaySong(currentPlaylist[nextIndex], nextIndex);
   };
 
@@ -228,14 +267,26 @@ export const useAudioPlayer = (playlist: Song[]) => {
     }
   };
 
-  // Toggle shuffle (deshabilitado - solo visual)
+  // Toggle shuffle
   const toggleShuffle = () => {
-    // Sin funcionalidad - botón decorativo
+    setPlayerState(prev => {
+      const newIsShuffle = !prev.isShuffle;
+      console.log('[Player] Shuffle:', newIsShuffle ? 'ON' : 'OFF');
+      return { ...prev, isShuffle: newIsShuffle };
+    });
   };
 
-  // Toggle repeat (deshabilitado - solo visual)
+  // Toggle repeat
   const toggleRepeat = () => {
-    // Sin funcionalidad - botón decorativo
+    setPlayerState(prev => {
+      const modes: Array<'off' | 'all' | 'one'> = ['off', 'all', 'one'];
+      const currentIndex = modes.indexOf(prev.repeatMode);
+      const nextMode = modes[(currentIndex + 1) % modes.length];
+
+      console.log('[Player] Repeat mode:', nextMode); // off | all | one
+
+      return { ...prev, repeatMode: nextMode };
+    });
   };
 
   // Reproducir canción específica
